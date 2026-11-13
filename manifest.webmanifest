@@ -3,7 +3,7 @@
   "short_name": "Forja",
   "description": "Registra tus entrenamientos, sube de rango y controla tus comidas.",
   "lang": "es",
-  "start_url": "./index.html",
+  "start_url": "./forja.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",

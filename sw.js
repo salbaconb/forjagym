@@ -1,6 +1,6 @@
 /* Forja: caché para que la app abra sin conexión. */
-var CACHE = 'forja-v1';
-var FILES = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
+var CACHE = 'forja-v2';
+var FILES = ['./', './forja.html', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
 self.addEventListener('install', function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(FILES); }).then(function () { return self.skipWaiting(); }));
 });
@@ -23,5 +23,5 @@ self.addEventListener('fetch', function (e) {
   /* Propios: red primero para recibir actualizaciones, caché sin conexión. */
   e.respondWith(fetch(req).then(function (r) {
     var cp = r.clone(); caches.open(CACHE).then(function (c) { c.put(req, cp); }); return r;
-  }).catch(function () { return caches.match(req).then(function (m) { return m || caches.match('./index.html'); }); }));
+  }).catch(function () { return caches.match(req).then(function (m) { return m || caches.match('./forja.html'); }); }));
 });
