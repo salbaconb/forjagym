@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' data: blob: https://*.supabase.co">
+<title>Forja</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
+<link rel="stylesheet" href="styles/base.css">
+<link rel="stylesheet" href="styles/tema.css">
+<link rel="stylesheet" href="styles/serio.css">
+<link rel="stylesheet" href="styles/movil.css">
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="brand"><span class="plate" aria-hidden="true"></span>Forja</div>
+    <div class="who" id="who"><span class="tag">Prototipo</span></div>
+  </div>
+  <main id="view" class="stack" aria-live="polite"></main>
+</div>
+
+<div id="rest" hidden>
+  <div class="in">
+    <div><div class="label" style="color:inherit;opacity:.7">Descanso</div><div class="t num" id="restTxt">1:30</div></div>
+    <button type="button" data-act="rest-add">+15 s</button>
+    <button type="button" data-act="rest-stop">Saltar</button>
+    <div class="pg"><i id="restBar"></i></div>
+  </div>
+</div>
+
+<nav class="bar" id="nav" aria-label="Secciones" hidden><div>
+  <i class="lens" id="lens" aria-hidden="true"></i><button type="button" data-tab="hoy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/></svg>Hoy</button>
+  <button type="button" data-tab="plan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>Plan</button>
+  <button type="button" data-tab="ejercicios"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4" width="17" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M3.5 17l5-4 4 3 3-2 5 3"/></svg>Ejercicios</button>
+  <button type="button" data-tab="comida"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3v8M4.5 3v5a2.5 2.5 0 0 0 5 0V3M7 11v10M17 21V3c-2.5 1.5-3.2 5-3.2 8H17"/></svg>Comida</button>
+  <button type="button" data-tab="ranking"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0V4zM8 6H4v1a3 3 0 0 0 3 3M16 6h4v1a3 3 0 0 1-3 3M12 13v4M8 20h8M10 17h4"/></svg>Ranking</button>
+  <button type="button" data-tab="perfil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>Perfil</button>
+</div></nav>
+<script src="js/app.js"></script>
+</body>
+</html>

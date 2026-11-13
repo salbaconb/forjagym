@@ -1,11 +1,45 @@
 {
   "name": "forja",
+  "productName": "Forja",
   "version": "1.0.0",
+  "description": "Forja: registra tus entrenamientos, sube de rango y controla tus comidas.",
+  "author": "salbaconb",
+  "license": "UNLICENSED",
   "private": true,
-  "description": "Forja: app de entrenamiento",
-  "dependencies": {
-    "@capacitor/android": "^6.2.0",
-    "@capacitor/cli": "^6.2.0",
-    "@capacitor/core": "^6.2.0"
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --publish never"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.salbaconb.forja",
+    "productName": "Forja",
+    "directories": { "output": "dist", "buildResources": "build" },
+    "files": ["src/**/*", "build/icon.png", "package.json"],
+    "artifactName": "Forja-${os}-${arch}.${ext}",
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "Forja"
+    },
+    "mac": {
+      "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }],
+      "icon": "build/icon.png",
+      "category": "public.app-category.healthcare-fitness"
+    },
+    "linux": {
+      "target": ["AppImage"],
+      "icon": "build/icon.png",
+      "category": "Utility"
+    }
   }
 }

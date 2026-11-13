@@ -1,0 +1,6 @@
+html{-webkit-text-size-adjust:100%}
+body{-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none}
+:root:root input,:root:root select,:root:root textarea{font-size:16px}
+:root:root button,:root:root .btn,:root:root .seg button,:root:root .filters button,:root:root [data-act]{touch-action:manipulation}
+:root:root .btn,:root:root .seg button,:root:root .filters button,:root:root .stepper button,:root:root nav.bar button{min-height:44px}
+:root:root .app{padding-inline:max(14px,env(safe-area-inset-left,0px)) max(14px,env(safe-area-inset-right,0px))}

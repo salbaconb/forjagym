@@ -1,7 +1,0 @@
-{
-  "appId": "com.salbaconb.forja",
-  "appName": "Forja",
-  "webDir": "www",
-  "backgroundColor": "#1B2029",
-  "android": { "allowMixedContent": false }
-}
