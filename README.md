@@ -7,6 +7,16 @@ App web móvil para registrar entrenamientos de gimnasio: rutinas por objetivo, 
 - **En local:** abre `index.html` en el navegador. Los datos se guardan en el `localStorage` del navegador.
 - **Publicada:** al subir a `main`, GitHub Actions la despliega en GitHub Pages (`https://salbaconb.github.io/forjagym/`). Actívalo en *Settings > Pages > Source: GitHub Actions*.
 
+## Instalarla como app «Forja»
+
+Es una PWA: se instala aparte, con su icono y a pantalla completa, y abre sin conexión. Abre la dirección publicada en el móvil y:
+
+- **Android (Chrome):** menú ⋮ > *Instalar aplicación*.
+- **iPhone (Safari):** botón Compartir > *Añadir a pantalla de inicio*.
+- **Ordenador (Chrome/Edge):** icono de instalar en la barra de direcciones.
+
+La instalación requiere HTTPS (GitHub Pages ya lo da). Si cambias el código, sube la versión de `CACHE` en `sw.js` para forzar la actualización.
+
 ## Cuentas en la nube (opcional, Supabase)
 
 Sin configurar nada, las cuentas viven solo en el dispositivo. Para sincronizar entre dispositivos:
@@ -28,5 +38,6 @@ La sección **Comida** usa Claude para estimar productos y calorías, y solo fun
 | --- | --- |
 | `index.html` | Toda la app (HTML, CSS y JS) |
 | `supabase_setup.sql` | Tabla, políticas RLS y borrado de cuenta |
+| `manifest.webmanifest`, `sw.js`, `icons/` | Instalación como app «Forja» y modo sin conexión |
 | `.github/workflows/pages.yml` | Despliegue en GitHub Pages |
 | `.nojekyll` | Evita el procesado de Jekyll |
