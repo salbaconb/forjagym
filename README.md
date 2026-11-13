@@ -7,7 +7,17 @@ App web móvil para registrar entrenamientos de gimnasio: rutinas por objetivo, 
 - **En local:** abre `forja.html` en el navegador. Los datos se guardan en el `localStorage` del navegador.
 - **Publicada:** al subir a `main`, GitHub Actions la despliega en GitHub Pages (`https://salbaconb.github.io/forjagym/`). Actívalo en *Settings > Pages > Source: GitHub Actions*.
 
-## Instalarla como app «Forja»
+## Descargar la app para Android (APK)
+
+Cada vez que se sube código a `main`, GitHub compila la app y la publica en **Releases > Forja (Android)**: https://github.com/salbaconb/forjagym/releases/tag/descarga
+
+1. Abre ese enlace desde el móvil y descarga `Forja.apk`.
+2. Ábrelo y permite *instalar apps de esta fuente* cuando Android lo pida.
+3. Se instala como **Forja**, con su icono, y abre a pantalla completa.
+
+El APK está firmado con la clave de depuración, suficiente para uso personal. iPhone no admite instalar un archivo así; allí usa la opción siguiente.
+
+## Instalarla como app «Forja» desde el navegador (PWA)
 
 Es una PWA: se instala aparte, con su icono y a pantalla completa, y abre sin conexión. Abre la dirección publicada en el móvil y:
 
@@ -40,5 +50,7 @@ La sección **Comida** usa Claude para estimar productos y calorías, y solo fun
 | `index.html` | Redirige a `forja.html` para que la web publicada abra en la raíz |
 | `supabase_setup.sql` | Tabla, políticas RLS y borrado de cuenta |
 | `manifest.webmanifest`, `sw.js`, `icons/` | Instalación como app «Forja» y modo sin conexión |
+| `package.json`, `capacitor.config.json`, `android-icons/` | Empaquetado como app Android con Capacitor |
+| `.github/workflows/android.yml` | Compila el APK y lo publica en Releases |
 | `.github/workflows/pages.yml` | Despliegue en GitHub Pages |
 | `.nojekyll` | Evita el procesado de Jekyll |
