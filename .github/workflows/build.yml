@@ -27,6 +27,12 @@ jobs:
         with:
           node-version: 20
       - run: npm install
+      - name: Test de arranque (Linux)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a npx electron . --smoke-test --no-sandbox
+      - name: Test de arranque (Windows y Mac)
+        if: runner.os != 'Linux'
+        run: npx electron . --smoke-test
       - run: npx electron-builder --publish never
       - uses: actions/upload-artifact@v4
         with:

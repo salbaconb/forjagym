@@ -36,4 +36,10 @@
 :root:root:root .ex-card{overflow:hidden}
 :root:root:root .fig3{border-radius:0;border-bottom:1px solid var(--line)}
 :root:root:root #rest{background:var(--surface);border:1px solid var(--line);border-radius:14px;-webkit-backdrop-filter:none;backdrop-filter:none}
-:root:root:root .ring::before{background:var(--hero)}
+:root:root:root .ring::before{background:var(--hero)}.whobtn{display:flex;align-items:center;gap:10px;background:none;border:0;padding:4px 4px 4px 12px;border-radius:999px;color:inherit;font:inherit;cursor:pointer;max-width:60vw}
+.whobtn span:first-child{color:var(--fg);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.whobtn:hover{background:var(--surface2)}
+.whobtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.whobtn[aria-current="page"] .avatar{box-shadow:0 0 0 3px var(--accent)}
+.avatar,.avatar-lg{overflow:hidden}
+.avatar img,.avatar-lg img{width:100%;height:100%;object-fit:cover;display:block}

@@ -1251,7 +1251,8 @@ function seedSessions(bw){
   });
   return out;
 }
-function fresh(p){return {profile:p,dayIdx:0,sessions:seedSessions(p.bw),cur:null,summary:null}}
+function noExamples(d){if(d&&d.sessions) d.sessions=d.sessions.filter(function(x){return !x.example}); return d}
+function fresh(p){return {profile:p,dayIdx:0,sessions:[],cur:null,summary:null}}
 /* ---------- cuentas en la nube (Supabase) ---------- */
 var SBK='forja-supa-v1', sbSess=null, sbT=null;
 try{sbSess=JSON.parse(localStorage.getItem(SBK)||'null')}catch(e){}
@@ -1325,6 +1326,7 @@ function sbAuth(email,d){
         var nm=name||(x.j.user.user_metadata&&x.j.user.user_metadata.name)||email.split('@')[0];
         data=fresh({name:String(nm).slice(0,30),bw:bw>30&&bw<250?bw:78,days:d.days,goal:d.goal,routine:'private'});
       }
+      noExamples(data);
       DB.users[email]={email:email,remote:true,created:Date.now(),data:data};
       authBusy=false; enter(email); sbPushNow();
     });
@@ -1335,7 +1337,7 @@ function sbBoot(){
   sbPullRemote().then(function(row){
     var u=DB.users[sbSess&&sbSess.email]; if(!u||!row||!row.data) return;
     if((row.data.upd||0)>(u.data.upd||0)){
-      u.data=row.data; S=u.data; try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){}; applyAcc();
+      u.data=noExamples(row.data); S=u.data; try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){}; applyAcc();
       if(!(S&&S.cur&&document.activeElement&&document.activeElement.tagName==='INPUT')) render();
     } else if((u.data.upd||0)>(row.data.upd||0)) sbPushNow();
   }).catch(function(){});
@@ -1400,6 +1402,7 @@ function randSalt(){
   try{crypto.getRandomValues(a)}catch(e){for(i=0;i<12;i++) a[i]=Math.floor(Math.random()*256)}
   return Array.from(a).map(function(x){return x.toString(16).padStart(2,'0')}).join('');
 }
+Object.keys(DB.users).forEach(function(k){noExamples(DB.users[k].data)});
 if(DB.session&&DB.users[DB.session]) S=DB.users[DB.session].data; else DB.session=null;
 
 /* ---------- lógica de entrenamiento ---------- */
@@ -1493,7 +1496,7 @@ function vAuth(){
       '<div class="field"><span class="label">Objetivo</span><div class="seg">'+Object.keys(GOALS).map(function(g){return '<button type="button" id="ag-'+g+'" data-act="agoal" data-v="'+g+'" aria-pressed="'+(d.goal===g)+'">'+GOALS[g].n+'</button>'}).join('')+'</div></div>';
   }
   out+='<p id="err" class="err" role="alert"></p><button type="submit" class="btn" id="a-go">'+(su?'Crear cuenta y empezar':'Entrar')+'</button></form>'+
-    '<p class="small muted">Prototipo: las cuentas se guardan solo en este navegador y no se envían a ningún servidor.</p></section>';
+    '<p class="small muted">'+(SUPA?'Tu cuenta y tus datos se sincronizan entre tus dispositivos.':'Las cuentas se guardan solo en este navegador y no se envían a ningún servidor.')+'</p></section>';
   return out;
 }
 
@@ -1647,12 +1650,61 @@ function routineHtml(days,custom){
       '<p class="small muted">'+d.e.map(function(id){return esc(EX[id].n)}).join(' · ')+'</p></div>';
   }).join('');
 }
+function avInner(n,ph){
+  if(ph&&/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+\/=]+$/.test(ph)) return '<img src="'+ph+'" alt="">';
+  return esc(String(n||'?').charAt(0).toUpperCase());
+}
+function photoFrom(file){
+  return new Promise(function(res,rej){
+    var fr=new FileReader(); fr.onerror=rej;
+    fr.onload=function(){
+      var img=new Image(); img.onerror=rej;
+      img.onload=function(){
+        var n=Math.min(img.width,img.height); if(!n){rej();return}
+        var sx=(img.width-n)/2, sy=(img.height-n)/2, c=document.createElement('canvas'); c.width=c.height=256;
+        var g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,256,256); g.drawImage(img,sx,sy,n,n,0,0,256,256);
+        res(c.toDataURL('image/jpeg',.82));
+      };
+      img.src=fr.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+document.addEventListener('change',function(e){
+  if(!e.target||e.target.id!=='photo-in') return;
+  var f=e.target.files&&e.target.files[0]; if(!f||!S) return;
+  var er=document.getElementById('photo-err'); if(er) er.textContent='';
+  if(f.size>20*1024*1024){if(er) er.textContent='La imagen es demasiado grande (máx. 20 MB).'; return}
+  photoFrom(f).then(function(d){S.profile.photo=d; save(); render()}).catch(function(){var x=document.getElementById('photo-err'); if(x) x.textContent='No se pudo leer esa imagen. Prueba con otra (JPG o PNG).'});
+});
+var editName=false;
+function nameEditor(p){
+  if(!editName) return '<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn" style="width:auto;padding:8px 16px;min-height:0" data-act="rename-open">Cambiar nombre</button>'+
+    '<button type="button" class="btn" style="width:auto;padding:8px 16px;min-height:0" data-act="photo-pick">Cambiar foto</button>'+
+    (p.photo?'<button type="button" class="btn ghost" style="width:auto;padding:8px 16px;min-height:0" data-act="photo-del">Quitar foto</button>':'')+
+    '<input type="file" id="photo-in" accept="image/*" hidden></div><span class="small" id="photo-err" role="alert"></span>';
+  return '<div class="field" style="margin-top:12px"><label class="label" for="f-name2">Nuevo nombre</label>'+
+    '<input id="f-name2" type="text" maxlength="30" value="'+esc(p.name||'')+'" placeholder="Tu nombre" autocomplete="off">'+
+    '<span class="small" id="name-err" role="alert"></span>'+
+    '<div style="display:flex;gap:8px;margin-top:8px"><button type="button" class="btn" data-act="rename-save">Guardar</button>'+
+    '<button type="button" class="btn ghost" data-act="rename-cancel">Cancelar</button></div></div>';
+}
+function renameSave(){
+  var el=document.getElementById('f-name2'), v=el?el.value.replace(/\s+/g,' ').trim():'';
+  if(!v){var e=document.getElementById('name-err'); if(e) e.textContent='Escribe un nombre.'; return}
+  S.profile.name=v.slice(0,30); editName=false; save(); render();
+}
+document.addEventListener('keydown',function(e){
+  if(!e.target||e.target.id!=='f-name2') return;
+  if(e.key==='Enter'){e.preventDefault();renameSave()}
+  else if(e.key==='Escape'){editName=false;render()}
+});
 function vPerfil(){
   var p=S.profile, u=DB.users[DB.session], ov=overall(S), pub=p.routine==='public';
   var total=S.sessions.reduce(function(a,s){return a+vol(s)},0);
-  var out='<section class="hero"><div class="pro"><span class="avatar-lg" aria-hidden="true">'+esc((p.name||u.email).charAt(0).toUpperCase())+'</span>'+
-    '<div style="min-width:0"><h2>'+esc(p.name||'Mi cuenta')+'</h2><span class="label" style="overflow-wrap:anywhere;text-transform:none;letter-spacing:0">'+esc(u.email)+'</span></div></div>'+
-    '<div style="display:flex;gap:8px;flex-wrap:wrap"><span class="rankpill"><i class="dot" style="background:var(--r'+ov.lv+');margin:0"></i>Rango '+RANKS[ov.lv]+'</span>'+'<span class="rankpill">'+LEAGUES[leagueOf(ptsOf(S))].n+'</span>'+'</div></section>'+
+  var out='<section class="hero"><div class="pro"><span class="avatar-lg" aria-hidden="true">'+avInner(p.name||u.email,p.photo)+'</span>'+
+    '<div style="min-width:0"><h2>'+esc(p.name||'Mi cuenta')+'</h2><span class="label" style="overflow-wrap:anywhere;text-transform:none;letter-spacing:0">'+esc(u.email)+'</span></div></div>'+nameEditor(p)+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap">'+'<span class="rankpill">'+LEAGUES[leagueOf(ptsOf(S))].n+'</span>'+'</div></section>'+
     '<div class="stats"><div class="stat a"><span class="label">Sesiones</span><b class="num">'+S.sessions.length+'</b></div>'+
     '<div class="stat b"><span class="label">Volumen total</span><b class="num">'+fmt(total/1000,1)+' t</b></div></div>';
 
@@ -1670,7 +1722,7 @@ function vPerfil(){
   var others=Object.keys(DB.users).filter(function(k){return k!==DB.session});
   out+='<section class="card"><h3>Comunidad</h3><p class="small muted" style="margin:2px 0 6px">Cuentas de este dispositivo.</p>'+(others.length?others.map(function(k){
     var d=DB.users[k].data, o=overall(d), pr=d.profile.routine==='public';
-    return '<div class="pub"><div class="rowb"><div class="day-title"><span class="avatar" aria-hidden="true">'+esc((d.profile.name||k).charAt(0).toUpperCase())+'</span><b>'+esc(d.profile.name||'Sin nombre')+'</b></div>'+
+    return '<div class="pub"><div class="rowb"><div class="day-title"><span class="avatar" aria-hidden="true">'+avInner(d.profile.name||k,d.profile.photo)+'</span><b>'+esc(d.profile.name||'Sin nombre')+'</b></div>'+
       '<span class="rk" style="color:var(--r'+o.lv+')">'+RANKS[o.lv]+'</span></div>'+
       (pr?'<span class="state pub-on" style="align-self:flex-start">Rutina pública</span>'+routineHtml(d.profile.days):'<span class="state pub-off" style="align-self:flex-start">Rutina privada</span>')+'</div>';
   }).join(''):'<p class="muted">Todavía no hay más cuentas. Cuando otra persona se registre aquí, verás su nombre y su rango, y su rutina si la hace pública.</p>')+'</section>';
@@ -2001,7 +2053,9 @@ function applyTheme(v){
 applyTheme(themePref());
 function moveLens(){
   var l=document.getElementById('lens'), a=document.querySelector('nav.bar button[aria-current="page"]');
+  if(l&&!a){l.style.opacity='0';return}
   if(!l||!a||!a.offsetWidth) return;
+  l.style.opacity='';
   var x='translateX('+a.offsetLeft+'px)';
   l.style.setProperty('--lx',x); l.style.transform=x; l.style.width=a.offsetWidth+'px';
 }
@@ -2012,7 +2066,7 @@ window.addEventListener('resize',moveLens);
 function render(){
   var logged=!!S;
   $('#nav').hidden=!logged;
-  $('#who').innerHTML=logged?'<span class="small muted" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(S.profile.name||'Mi cuenta')+'</span><span class="avatar" aria-hidden="true">'+esc((S.profile.name||DB.session||'?').charAt(0).toUpperCase())+'</span>':'<span class="tag">Prototipo</span>';
+  $('#who').innerHTML=logged?'<button type="button" class="whobtn" data-tab="perfil" aria-label="Abrir mi perfil"'+(tab==='perfil'?' aria-current="page"':'')+'><span>'+esc(S.profile.name||'Mi cuenta')+'</span><span class="avatar" aria-hidden="true">'+avInner(S.profile.name||DB.session||'?',S.profile.photo)+'</span></button>':'';
   $('#view').innerHTML=logged?VIEWS[tab]():vAuth();
   document.querySelectorAll('nav.bar button').forEach(function(b){
     if(b.dataset.tab===tab) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current');
@@ -2123,7 +2177,7 @@ document.addEventListener('submit',function(e){
 });
 document.addEventListener('click',function(e){
   var t=e.target.closest('[data-tab]');
-  if(t){tab=t.dataset.tab;confirmDel=false;render();window.scrollTo(0,0);return}
+  if(t){tab=t.dataset.tab;confirmDel=false;editName=false;render();window.scrollTo(0,0);return}
   var b=e.target.closest('[data-act]'); if(!b) return;
   var a=b.dataset.act, i=+b.dataset.i, j=+b.dataset.j;
   if(a==='mode'){mode=b.dataset.v;render()}
@@ -2181,6 +2235,11 @@ document.addEventListener('click',function(e){
   else if(a==='toggle-ex'){var xid=b.dataset.id;openEx=openEx===xid?null:xid;$('#lib-list').innerHTML=libList();var nb=document.getElementById('ex-'+xid);if(nb) nb.focus({preventScroll:true})}
   else if(a==='lib-g'){libG=b.dataset.v;render()}
   else if(a==='vis'){S.profile.routine=b.dataset.v;save();render()}
+  else if(a==='rename-open'){editName=true;render();setTimeout(function(){var e=document.getElementById('f-name2');if(e){e.focus();e.select()}},30)}
+  else if(a==='rename-cancel'){editName=false;render()}
+  else if(a==='photo-pick'){var fi=document.getElementById('photo-in'); if(fi) fi.click()}
+  else if(a==='photo-del'){delete S.profile.photo; save(); render()}
+  else if(a==='rename-save'){renameSave()}
   else if(a==='restex'){var rx=S.profile.restEx=S.profile.restEx||{}; rx[b.dataset.id]=Math.max(15,Math.min(600,restFor(b.dataset.id)+ +b.dataset.d)); save(); render()}
   else if(a==='restcfg'){restSet(b.dataset.k,+b.dataset.d); save(); render()}
   else if(a==='resttog'){var rc=restCfg(), rr=S.profile.rest=S.profile.rest||{}; rr.main=rc.main; rr.acc=rc.acc; rr.beep=rc.beep; rr.vib=rc.vib; rr[b.dataset.k]=!rc[b.dataset.k]; if(b.dataset.k==='beep'&&rr.beep) ping(); save(); render()}
